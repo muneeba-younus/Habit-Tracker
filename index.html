@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Habit Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffe6f2;
+      color: #4a235a;
+      margin: 10px;
+    }
+    h2 {
+      text-align: center;
+      color: #8e44ad;
+      font-size: 20px;
+    }
+    .progress-bar {
+      height: 12px;
+      background: #d7bde2;
+      border-radius: 6px;
+      margin: 10px auto;
+      width: 90%;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #8e44ad;
+      border-radius: 6px;
+      width: 0%;
+    }
+    .reset-btn {
+      display: block;
+      margin: 15px auto;
+      padding: 8px 16px;
+      background: #f5b7b1;
+      border: none;
+      border-radius: 6px;
+      color: #4a235a;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 2px solid #f5b7b1;
+      border-radius: 10px;
+      background: #fff0f5;
+    }
+    table {
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+    th, td {
+      border: 1px solid #d7bde2;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    th {
+      background: #f5b7b1;
+      color: #4a235a;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    tr:nth-child(even) {
+      background: #fdf2f8;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.5);
+      cursor: pointer;
+    }
+    td:first-child, th:first-child {
+      position: sticky;
+      left: 0;
+      background: #fce4ec;
+      z-index: 3;
+      text-align: left;
+      font-weight: bold;
+    }
+    canvas {
+      margin-top: 20px;
+      background: #fff0f5;
+      border-radius: 10px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="monthTitle">🌸 Monthly Habit Tracker 🌸</h2>
+  <div class="progress-bar"><div id="dailyProgress" class="progress-fill"></div></div>
+  <button class="reset-btn" onclick="resetTracker()">🔄 Reset Tracker</button>
+  
+  <div class="table-container">
+    <table id="habitTable">
+      <thead>
+        <tr>
+          <th>Habit</th>
+          <script>
+            for(let d=1; d<=31; d++){
+              document.write("<th>"+d+"</th>");
+            }
+          </script>
+        </tr>
+      </thead>
+      <tbody>
+        <script>
+          const habits = [
+            "Fajar Namaz",
+            "Fat Cutter Powder (Morning)",
+            "Astaghfar",
+            "Ayat-e-Karima",
+            "Durood Shareef",
+            "Zohar Namaz",
+            "Surah Muzammil",
+            "Surah Kahf",
+            "Asar Namaz",
+            "Maghrib Namaz",
+            "Surah Waqiah",
+            "Isha Namaz",
+            "Surah Mulk",
+            "Quran Reading",
+            "Walk / Exercise",
+            "Green Tea",
+            "Seeds",
+            "Fat Cutter Powder (Evening)",
+            "Face Massage"
+          ];
+
+          habits.forEach((habit, i) => {
+            document.write("<tr><td>"+habit+"</td>");
+            for(let d=1; d<=31; d++){
+              let id = "h"+i+"d"+d;
+              document.write("<td><input type='checkbox' id='"+id+"'></td>");
+            }
+            document.write("</tr>");
+          });
+
+          window.onload = () => {
+            const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const now = new Date();
+            document.getElementById("monthTitle").innerText = "🌸 "+monthNames[now.getMonth()]+" Habit Tracker 🌸";
+
+            habits.forEach((habit, i) => {
+              for(let d=1; d<=31; d++){
+                let id = "h"+i+"d"+d;
+                let checkbox = document.getElementById(id);
+                if(localStorage.getItem(id)==="true"){
+                  checkbox.checked = true;
+                }
+                checkbox.addEventListener("change", () => {
+                  localStorage.setItem(id, checkbox.checked);
+                  updateDailyProgress();
+                  updateChart();
+                });
+              }
+            });
+            updateDailyProgress();
+            updateChart();
+          }
+
+          function updateDailyProgress(){
+            let today = new Date().getDate();
+            let total = habits.length;
+            let done = 0;
+            habits.forEach((habit, i) => {
+              let id = "h"+i+"d"+today;
+              if(document.getElementById(id).checked){ done++; }
+            });
+            let percent = (done/total)*100;
+            document.getElementById("dailyProgress").style.width = percent+"%";
+          }
+
+          function resetTracker(){
+            if(confirm("Are you sure you want to reset all data?")){
+              localStorage.clear();
+              location.reload();
+            }
+          }
+        </script>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Line Chart -->
+  <canvas id="progressChart"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    function updateChart(){
+      let days = [];
+      let counts = [];
+      for(let d=1; d<=31; d++){
+        days.push(d);
+        let done = 0;
+        habits.forEach((habit, i) => {
+          let id = "h"+i+"d"+d;
+          if(document.getElementById(id).checked){ done++; }
+        });
+        counts.push(done);
+      }
+      if(window.myChart){ window.myChart.destroy(); }
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      window.myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'Habits Completed',
+            data: counts,
+            borderColor: '#8e44ad',
+            backgroundColor: '#f5b7b1',
+            fill: false,
+            tension: 0.2
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true, max: habits.length }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
