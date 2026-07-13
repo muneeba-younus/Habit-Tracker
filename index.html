@@ -80,6 +80,9 @@
       text-align: left;
       font-weight: bold;
     }
+    .highlight-today {
+      background: #e8daef !important;
+    }
     canvas {
       margin-top: 20px;
       background: #fff0f5;
@@ -142,6 +145,17 @@
             const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
             const now = new Date();
             document.getElementById("monthTitle").innerText = "🌸 "+monthNames[now.getMonth()]+" Habit Tracker 🌸";
+
+            let today = now.getDate();
+            let table = document.getElementById("habitTable");
+            // highlight header
+            table.querySelector("thead tr").children[today].classList.add("highlight-today");
+            // highlight all rows for today's column
+            Array.from(table.querySelectorAll("tbody tr")).forEach(row => {
+              if(row.children[today]) {
+                row.children[today].classList.add("highlight-today");
+              }
+            });
 
             habits.forEach((habit, i) => {
               for(let d=1; d<=31; d++){
