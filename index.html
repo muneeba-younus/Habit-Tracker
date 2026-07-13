@@ -81,7 +81,7 @@
       font-weight: bold;
     }
     .highlight-today {
-      background: #e8daef !important;
+      background: #e8daef !important; /* lavender highlight */
     }
     canvas {
       margin-top: 20px;
@@ -147,13 +147,13 @@
             document.getElementById("monthTitle").innerText = "🌸 "+monthNames[now.getMonth()]+" Habit Tracker 🌸";
 
             let today = now.getDate();
+            let colIndex = today; // Habit column = 0, Day 1 = index 1, so Day N = index N
+
             let table = document.getElementById("habitTable");
-            // highlight header
-            table.querySelector("thead tr").children[today].classList.add("highlight-today");
-            // highlight all rows for today's column
+            // highlight only checkbox cells (skip header row)
             Array.from(table.querySelectorAll("tbody tr")).forEach(row => {
-              if(row.children[today]) {
-                row.children[today].classList.add("highlight-today");
+              if(row.children[colIndex]) {
+                row.children[colIndex].classList.add("highlight-today");
               }
             });
 
